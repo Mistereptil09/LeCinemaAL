@@ -4,6 +4,8 @@ services:
     container_name: le_cinema_db
     env_file:
       - ../.env
+    security_opt:
+      - apparmor:unconfined
     environment:
       POSTGRES_USER: ${DB_USER:-adonis}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
@@ -24,6 +26,8 @@ services:
       dockerfile: docker/Dockerfile
     container_name: le_cinema_api
     restart: unless-stopped
+    security_opt:
+      - apparmor:unconfined
     depends_on:
       db:
         condition: service_healthy
