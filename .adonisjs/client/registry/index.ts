@@ -6,29 +6,29 @@ import type { ApiDefinition } from './tree.d.ts'
 const placeholder: any = {}
 
 const routes = {
-  'new_account.store': {
+  'auth.new_account.store': {
     methods: ["POST"],
     pattern: '/api/v1/auth/signup',
     tokens: [{"old":"/api/v1/auth/signup","type":0,"val":"api","end":""},{"old":"/api/v1/auth/signup","type":0,"val":"v1","end":""},{"old":"/api/v1/auth/signup","type":0,"val":"auth","end":""},{"old":"/api/v1/auth/signup","type":0,"val":"signup","end":""}],
-    types: placeholder as Registry['new_account.store']['types'],
+    types: placeholder as Registry['auth.new_account.store']['types'],
   },
-  'access_tokens.store': {
+  'auth.access_tokens.store': {
     methods: ["POST"],
     pattern: '/api/v1/auth/login',
     tokens: [{"old":"/api/v1/auth/login","type":0,"val":"api","end":""},{"old":"/api/v1/auth/login","type":0,"val":"v1","end":""},{"old":"/api/v1/auth/login","type":0,"val":"auth","end":""},{"old":"/api/v1/auth/login","type":0,"val":"login","end":""}],
-    types: placeholder as Registry['access_tokens.store']['types'],
+    types: placeholder as Registry['auth.access_tokens.store']['types'],
   },
-  'profile.show': {
+  'profile.profile.show': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/account/profile',
     tokens: [{"old":"/api/v1/account/profile","type":0,"val":"api","end":""},{"old":"/api/v1/account/profile","type":0,"val":"v1","end":""},{"old":"/api/v1/account/profile","type":0,"val":"account","end":""},{"old":"/api/v1/account/profile","type":0,"val":"profile","end":""}],
-    types: placeholder as Registry['profile.show']['types'],
+    types: placeholder as Registry['profile.profile.show']['types'],
   },
-  'access_tokens.destroy': {
+  'profile.access_tokens.destroy': {
     methods: ["POST"],
     pattern: '/api/v1/account/logout',
     tokens: [{"old":"/api/v1/account/logout","type":0,"val":"api","end":""},{"old":"/api/v1/account/logout","type":0,"val":"v1","end":""},{"old":"/api/v1/account/logout","type":0,"val":"account","end":""},{"old":"/api/v1/account/logout","type":0,"val":"logout","end":""}],
-    types: placeholder as Registry['access_tokens.destroy']['types'],
+    types: placeholder as Registry['profile.access_tokens.destroy']['types'],
   },
 } as const satisfies Record<string, AdonisEndpoint>
 

@@ -12,32 +12,26 @@ import router from '@adonisjs/core/services/router'
 import { controllers } from '#generated/controllers'
 import AutoSwagger from 'adonis-autoswagger'
 import swagger from '#config/swagger'
+import './routes/auth.ts'
+import { appprefix } from '#start/constants'
 
 router.get('/', () => {
   return { hello: 'world' }
 })
 
-// ─── API routes ───────────────────────────────────────────────────
 router
   .group(() => {
-    router
-      .group(() => {
-        router.post('signup', [controllers.NewAccount, 'store'])
-        router.post('login', [controllers.AccessTokens, 'store'])
-      })
-      .prefix('auth')
-
     router
       .group(() => {
         router.get('profile', [controllers.Profile, 'show'])
         router.post('logout', [controllers.AccessTokens, 'destroy'])
       })
       .prefix('account')
+      .as('profile')
       .use(middleware.auth())
   })
-  .prefix('/api/v1')
+  .prefix(appprefix)
 
-// ─── Swagger — outside all groups, no prefix ─────────────────────
 router.get('/swagger', async () => {
   return AutoSwagger.default.docs(router.toJSON(), swagger)
 })
