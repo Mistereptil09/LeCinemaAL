@@ -2,9 +2,46 @@ services:
   db:
     image: postgres:16-alpine
     container_name: le_cinema_db
+    env_file:
+      - ../.env
     environment:
       POSTGRES_USER: ${DB_USER:-adonis}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
       POSTGRES_DB: ${DB_DATABASE:-le_cinema}
     ports:
       - '5432:5432'
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-adonis} -d ${DB_DATABASE:-le_cinema}']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: le_cinema_api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - '${PORT:-3333}:3333'
+    env_file:
+      - ../.env
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      PORT: 3333
+      HOST: 0.0.0.0
+    volumes:
+      - ../app:/app/app
+      - ../config:/app/config
+      - ../start:/app/start
+      - ../database:/app/database
+      - ../providers:/app/providers
+
+volumes:
+  pg_data:
