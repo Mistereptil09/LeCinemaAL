@@ -8,7 +8,18 @@ import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
 export class AuthAccessTokenSchema extends BaseModel {
-  static $columns = ['abilities', 'createdAt', 'expiresAt', 'hash', 'id', 'lastUsedAt', 'name', 'tokenableId', 'type', 'updatedAt'] as const
+  static $columns = [
+    'abilities',
+    'createdAt',
+    'expiresAt',
+    'hash',
+    'id',
+    'lastUsedAt',
+    'name',
+    'tokenableId',
+    'type',
+    'updatedAt',
+  ] as const
   $columns = AuthAccessTokenSchema.$columns
   @column()
   declare abilities: string
@@ -33,7 +44,17 @@ export class AuthAccessTokenSchema extends BaseModel {
 }
 
 export class MovieSchema extends BaseModel {
-  static $columns = ['createdAt', 'description', 'director', 'duration', 'id', 'images', 'minAge', 'title', 'updatedAt'] as const
+  static $columns = [
+    'createdAt',
+    'description',
+    'director',
+    'duration',
+    'id',
+    'images',
+    'minAge',
+    'title',
+    'updatedAt',
+  ] as const
   $columns = MovieSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -56,7 +77,18 @@ export class MovieSchema extends BaseModel {
 }
 
 export class RoomSchema extends BaseModel {
-  static $columns = ['capacity', 'createdAt', 'description', 'hasDisabledAccess', 'id', 'images', 'isUnderMaintenance', 'name', 'type', 'updatedAt'] as const
+  static $columns = [
+    'capacity',
+    'createdAt',
+    'description',
+    'hasDisabledAccess',
+    'id',
+    'images',
+    'isUnderMaintenance',
+    'name',
+    'type',
+    'updatedAt',
+  ] as const
   $columns = RoomSchema.$columns
   @column()
   declare capacity: number
@@ -81,7 +113,15 @@ export class RoomSchema extends BaseModel {
 }
 
 export class ScreeningSchema extends BaseModel {
-  static $columns = ['createdAt', 'endAt', 'id', 'movieId', 'roomId', 'startAt', 'updatedAt'] as const
+  static $columns = [
+    'createdAt',
+    'endAt',
+    'id',
+    'movieId',
+    'roomId',
+    'startAt',
+    'updatedAt',
+  ] as const
   $columns = ScreeningSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -113,7 +153,15 @@ export class TicketUsSchema extends BaseModel {
 }
 
 export class TicketSchema extends BaseModel {
-  static $columns = ['createdAt', 'id', 'isUsed', 'remainingUses', 'type', 'updatedAt', 'userId'] as const
+  static $columns = [
+    'createdAt',
+    'id',
+    'isUsed',
+    'remainingUses',
+    'type',
+    'updatedAt',
+    'userId',
+  ] as const
   $columns = TicketSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -149,7 +197,17 @@ export class TransactionSchema extends BaseModel {
 }
 
 export class UserSchema extends BaseModel {
-  static $columns = ['balance', 'createdAt', 'email', 'firstName', 'id', 'lastName', 'password', 'role', 'updatedAt'] as const
+  static $columns = [
+    'balance',
+    'createdAt',
+    'email',
+    'firstName',
+    'id',
+    'lastName',
+    'password',
+    'role',
+    'updatedAt',
+  ] as const
   $columns = UserSchema.$columns
   @column()
   declare balance: string

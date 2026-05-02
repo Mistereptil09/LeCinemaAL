@@ -15,4 +15,3 @@ router
   })
   .prefix(appprefix + '/rooms')
   .use(middleware.auth())
-
