@@ -8,18 +8,7 @@ import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
 export class AuthAccessTokenSchema extends BaseModel {
-  static $columns = [
-    'abilities',
-    'createdAt',
-    'expiresAt',
-    'hash',
-    'id',
-    'lastUsedAt',
-    'name',
-    'tokenableId',
-    'type',
-    'updatedAt',
-  ] as const
+  static $columns = ['abilities', 'createdAt', 'expiresAt', 'hash', 'id', 'lastUsedAt', 'name', 'tokenableId', 'type', 'updatedAt'] as const
   $columns = AuthAccessTokenSchema.$columns
   @column()
   declare abilities: string
@@ -43,29 +32,141 @@ export class AuthAccessTokenSchema extends BaseModel {
   declare updatedAt: DateTime | null
 }
 
+export class MovieSchema extends BaseModel {
+  static $columns = ['createdAt', 'description', 'director', 'duration', 'id', 'images', 'minAge', 'title', 'updatedAt'] as const
+  $columns = MovieSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare description: string
+  @column()
+  declare director: string
+  @column()
+  declare duration: number
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare images: any
+  @column()
+  declare minAge: number
+  @column()
+  declare title: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
+export class RoomSchema extends BaseModel {
+  static $columns = ['capacity', 'createdAt', 'description', 'hasDisabledAccess', 'id', 'images', 'isUnderMaintenance', 'name', 'type', 'updatedAt'] as const
+  $columns = RoomSchema.$columns
+  @column()
+  declare capacity: number
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare description: string
+  @column()
+  declare hasDisabledAccess: boolean
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare images: any
+  @column()
+  declare isUnderMaintenance: boolean
+  @column()
+  declare name: string
+  @column()
+  declare type: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
+export class ScreeningSchema extends BaseModel {
+  static $columns = ['createdAt', 'endAt', 'id', 'movieId', 'roomId', 'startAt', 'updatedAt'] as const
+  $columns = ScreeningSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column.dateTime()
+  declare endAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare movieId: number
+  @column()
+  declare roomId: number
+  @column.dateTime()
+  declare startAt: DateTime
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
+export class TicketUsSchema extends BaseModel {
+  static $columns = ['id', 'screeningId', 'ticketId', 'usedAt'] as const
+  $columns = TicketUsSchema.$columns
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare screeningId: number
+  @column()
+  declare ticketId: number
+  @column.dateTime()
+  declare usedAt: DateTime
+}
+
+export class TicketSchema extends BaseModel {
+  static $columns = ['createdAt', 'id', 'isUsed', 'remainingUses', 'type', 'updatedAt', 'userId'] as const
+  $columns = TicketSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare isUsed: boolean
+  @column()
+  declare remainingUses: number
+  @column()
+  declare type: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: number
+}
+
+export class TransactionSchema extends BaseModel {
+  static $columns = ['amount', 'createdAt', 'description', 'id', 'type', 'userId'] as const
+  $columns = TransactionSchema.$columns
+  @column()
+  declare amount: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare description: string | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare type: string
+  @column()
+  declare userId: number
+}
+
 export class UserSchema extends BaseModel {
-  static $columns = [
-    'createdAt',
-    'email',
-    'fullName',
-    'id',
-    'role',
-    'password',
-    'updatedAt',
-  ] as const
+  static $columns = ['balance', 'createdAt', 'email', 'firstName', 'id', 'lastName', 'password', 'role', 'updatedAt'] as const
   $columns = UserSchema.$columns
+  @column()
+  declare balance: string
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
   @column()
   declare email: string
   @column()
-  declare fullName: string | null
+  declare firstName: string
   @column({ isPrimary: true })
   declare id: number
   @column()
-  declare role: string
+  declare lastName: string
   @column({ serializeAs: null })
   declare password: string
+  @column()
+  declare role: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
 }
