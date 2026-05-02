@@ -67,7 +67,7 @@ export class MovieSchema extends BaseModel {
   @column({ isPrimary: true })
   declare id: number
   @column()
-  declare images: any
+  declare images: any | null
   @column()
   declare minAge: number
   @column()
@@ -95,13 +95,13 @@ export class RoomSchema extends BaseModel {
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
   @column()
-  declare description: string
+  declare description: string | null
   @column()
   declare hasDisabledAccess: boolean
   @column({ isPrimary: true })
   declare id: number
   @column()
-  declare images: any
+  declare images: any | null
   @column()
   declare isUnderMaintenance: boolean
   @column()
@@ -149,7 +149,7 @@ export class TicketUsSchema extends BaseModel {
   @column()
   declare ticketId: number
   @column.dateTime()
-  declare usedAt: DateTime
+  declare usedAt: DateTime | null
 }
 
 export class TicketSchema extends BaseModel {
