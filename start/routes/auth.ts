@@ -7,7 +7,7 @@ router
   .group(() => {
     router.post('/register', [AuthController, 'register'])
     router.post('/login', [AuthController, 'login'])
-    router.post('/refresh', [AuthController, 'refresh'])
+    router.post('/refresh', [AuthController, 'refresh']).use(middleware.auth())
     router.post('/logout', [AuthController, 'logout']).use(middleware.auth())
   })
   .prefix(appprefix + '/auth')
