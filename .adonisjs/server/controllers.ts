@@ -7,7 +7,6 @@ export const controllers = {
   AccessTokens: () => import('#controllers/access_tokens_controller'),
   Auth: () => import('#controllers/auth_controller'),
   Movies: () => import('#controllers/movies_controller'),
-  NewAccount: () => import('#controllers/new_account_controller'),
   Profile: () => import('#controllers/profile_controller'),
   Rooms: () => import('#controllers/rooms_controller'),
   Screenings: () => import('#controllers/screenings_controller'),

@@ -1,5 +1,6 @@
 import { middleware } from '#start/kernel'
 import router from '@adonisjs/core/services/router'
+import { appprefix } from '#start/constants'
 const ScreeningsController = () => import('#controllers/screenings_controller')
 
 router
@@ -11,5 +12,5 @@ router
     router.put('/:id', [ScreeningsController, 'update']).use(middleware.admin())
     router.delete('/:id', [ScreeningsController, 'destroy']).use(middleware.admin())
   })
-  .prefix('/screenings')
+  .prefix(appprefix + '/screenings')
   .use(middleware.auth())

@@ -1,5 +1,6 @@
 import router from '@adonisjs/core/services/router'
 import { middleware } from '#start/kernel'
+import { appprefix } from '#start/constants'
 const MoviesController = () => import('#controllers/movies_controller')
 
 router
@@ -11,5 +12,5 @@ router
     router.put('/:id', [MoviesController, 'update']).use(middleware.admin())
     router.delete('/:id', [MoviesController, 'destroy']).use(middleware.admin())
   })
-  .prefix('/movies')
+  .prefix(appprefix + '/movies')
   .use(middleware.auth())

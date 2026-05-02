@@ -1,5 +1,6 @@
 import { middleware } from '#start/kernel'
 import router from '@adonisjs/core/services/router'
+import { appprefix } from '#start/constants'
 const RoomsController = () => import('#controllers/rooms_controller')
 
 router
@@ -12,6 +13,6 @@ router
     router.delete('/:id', [RoomsController, 'destroy']).use(middleware.admin())
     router.patch('/:id/maintenance', [RoomsController, 'toggleMaintenance']).use(middleware.admin())
   })
-  .prefix('/rooms')
+  .prefix(appprefix + '/rooms')
   .use(middleware.auth())
 

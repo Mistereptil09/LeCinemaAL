@@ -1,5 +1,6 @@
 import router from '@adonisjs/core/services/router'
 import { middleware } from '#start/kernel'
+import { appprefix } from '#start/constants'
 const AuthController = () => import('#controllers/auth_controller')
 
 router
@@ -9,5 +10,5 @@ router
     router.post('/refresh', [AuthController, 'refresh'])
     router.post('/logout', [AuthController, 'logout']).use(middleware.auth())
   })
-  .prefix('/auth')
+  .prefix(appprefix + '/auth')
   .as('auth')

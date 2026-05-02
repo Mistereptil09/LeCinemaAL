@@ -1,5 +1,6 @@
 import { middleware } from '#start/kernel'
 import router from '@adonisjs/core/services/router'
+import { appprefix } from '#start/constants'
 const TicketsController = () => import('#controllers/tickets_controller')
 
 router
@@ -8,5 +9,5 @@ router
     router.post('/', [TicketsController, 'store'])
     router.post('/:id/use', [TicketsController, 'use'])
   })
-  .prefix('/tickets')
+  .prefix(appprefix + '/tickets')
   .use(middleware.auth())

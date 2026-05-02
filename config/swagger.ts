@@ -3,11 +3,11 @@ import url from "node:url";
 
 export default {
   path: path.dirname(url.fileURLToPath(import.meta.url)) + "/../",
-  title: "Foo", // use info instead
+  title: "Le Cinema Des AL API", // use info instead
   version: "1.0.0", // use info instead
-  description: "", // use info instead
+  description: "Mounkassa Thomas - Ciorba Antonio - Gerault Nathan", // use info instead
   tagIndex: 2,
-  productionEnv: "production", // optional
+  productionEnv: "developpement", // optional
   info: {
     title: "title",
     version: "1.0.0",
