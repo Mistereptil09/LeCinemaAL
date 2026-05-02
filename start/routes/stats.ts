@@ -1,0 +1,13 @@
+import { middleware } from '#start/kernel'
+import router from '@adonisjs/core/services/router'
+
+router
+  .group(() => {
+    router.get('/daily', [StatsController, 'daily'])
+    router.get('/weekly', [StatsController, 'weekly'])
+    router.get('/realtime', [StatsController, 'realtime'])
+    router.get('/', [StatsController, 'byPeriod'])
+  })
+  .prefix('/stats')
+  .use(middleware.auth())
+  .use(middleware.admin())

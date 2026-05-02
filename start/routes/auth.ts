@@ -1,11 +1,12 @@
 import router from '@adonisjs/core/services/router'
-import { controllers } from '#generated/controllers'
-import { appprefix } from '#start/constants'
+import { middleware } from '#start/kernel'
 
 router
   .group(() => {
-    router.post('signup', [controllers.NewAccount, 'store'])
-    router.post('login', [controllers.AccessTokens, 'store'])
+    router.post('/register', [AuthController, 'register'])
+    router.post('/login', [AuthController, 'login'])
+    router.post('/refresh', [AuthController, 'refresh'])
+    router.post('/logout', [AuthController, 'logout']).use(middleware.auth())
   })
-  .prefix(appprefix + '/auth')
+  .prefix('/auth')
   .as('auth')

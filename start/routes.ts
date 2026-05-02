@@ -6,31 +6,25 @@
 | The routes file is used for defining the HTTP routes.
 |
 */
-
-import { middleware } from '#start/kernel'
-import router from '@adonisjs/core/services/router'
-import { controllers } from '#generated/controllers'
 import AutoSwagger from 'adonis-autoswagger'
 import swagger from '#config/swagger'
-import './routes/auth.ts'
 import { appprefix } from '#start/constants'
-
-router.get('/', () => {
-  return { hello: 'world' }
-})
+import router from '@adonisjs/core/services/router'
 
 router
   .group(() => {
-    router
-      .group(() => {
-        router.get('profile', [controllers.Profile, 'show'])
-        router.post('logout', [controllers.AccessTokens, 'destroy'])
-      })
-      .prefix('account')
-      .as('profile')
-      .use(middleware.auth())
+    import('./routes/auth.ts')
+    import('./routes/users.ts')
+    import('./routes/rooms.ts')
+    import('./routes/movies.ts')
+    import('./routes/screenings.ts')
+    import('./routes/tickets.ts')
+    import('./routes/stats.ts')
   })
   .prefix(appprefix)
+router.get('/', () => {
+  return { hello: 'world' }
+})
 
 router.get('/swagger', async () => {
   return AutoSwagger.default.docs(router.toJSON(), swagger)
