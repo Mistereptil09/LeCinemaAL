@@ -1,5 +1,6 @@
 import { middleware } from '#start/kernel'
 import router from '@adonisjs/core/services/router'
+const ScreeningsController = () => import('#controllers/screenings_controller')
 
 router
   .group(() => {
