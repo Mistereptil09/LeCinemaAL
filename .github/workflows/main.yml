@@ -16,7 +16,7 @@ jobs:
         env:
           POSTGRES_USER: adonis
           POSTGRES_PASSWORD: secret
-          POSTGRES_DB: le_cinema_test
+          POSTGRES_DB: le_cinema
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
