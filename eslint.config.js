@@ -1,2 +1,3 @@
 import { configApp } from '@adonisjs/eslint-config'
-export default configApp()
+
+export default [...configApp(), { ignores: ['docker/**', 'node_modules/**'] }]

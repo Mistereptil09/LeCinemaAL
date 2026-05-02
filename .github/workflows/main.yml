@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: adonis
+          POSTGRES_PASSWORD: secret
+          POSTGRES_DB: le_cinema
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm ci
+
+      - name: Load test environment
+        run: cat .env.exemple >> $GITHUB_ENV
+
+      - name: Run migrations
+        run: node ace migration:run
+
+      - name: Seed database
+        run: node ace db:seed
+
+      - name: Run tests
+        run: node ace test
