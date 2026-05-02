@@ -1,4 +1,5 @@
-name: ci.yml
+name: CI
+
 on:
   push:
     branches: [main, develop]
@@ -47,6 +48,16 @@ jobs:
         ports:
           - 5432:5432
 
+    env:
+      NODE_ENV: test
+      DB_CONNECTION: pg
+      PG_HOST: localhost
+      PG_PORT: 5432
+      PG_USER: adonis
+      PG_PASSWORD: password
+      PG_DB_NAME: le_cinema_test
+      APP_KEY: ${{ secrets.APP_KEY }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -60,14 +71,11 @@ jobs:
       - name: Prepare environment
         run: cp .env.test .env
 
+      - name: Run migrations
+        run: node ace migration:run
+
+      - name: Seed database
+        run: node ace db:seed
+
       - name: Run tests
         run: node ace test
-        env:
-          DB_CONNECTION: pg
-          PG_HOST: localhost
-          PG_PORT: 5432
-          PG_USER: adonis
-          PG_PASSWORD: password
-          PG_DB_NAME: le_cinema_test
-          APP_KEY: ${{ secrets.APP_KEY }}
-          NODE_ENV: test
