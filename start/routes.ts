@@ -17,6 +17,7 @@ router.get('/', () => {
   return { hello: 'world' }
 })
 
+// ─── API routes ───────────────────────────────────────────────────
 router
   .group(() => {
     router
@@ -25,17 +26,6 @@ router
         router.post('login', [controllers.AccessTokens, 'store'])
       })
       .prefix('auth')
-      .as('auth')
-
-
-      router.get('/swagger', async () =>  {
-        return AutoSwagger.default.docs(router.toJSON(), swagger)
-      })
-
-      router.get('/docs',async () => {
-        return AutoSwagger.default.ui('/swagger',swagger)
-      })
-
 
     router
       .group(() => {
@@ -43,7 +33,15 @@ router
         router.post('logout', [controllers.AccessTokens, 'destroy'])
       })
       .prefix('account')
-      .as('profile')
       .use(middleware.auth())
   })
   .prefix('/api/v1')
+
+// ─── Swagger — outside all groups, no prefix ─────────────────────
+router.get('/swagger', async () => {
+  return AutoSwagger.default.docs(router.toJSON(), swagger)
+})
+
+router.get('/docs', async () => {
+  return AutoSwagger.default.ui('/swagger', swagger)
+})
