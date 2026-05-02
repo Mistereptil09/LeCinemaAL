@@ -34,7 +34,7 @@ jobs:
       - run: npm ci
 
       - name: Load test environment
-        run: cat .env.exemple >> $GITHUB_ENV
+        run: cat .env.example >> $GITHUB_ENV
 
       - name: Run migrations
         run: node ace migration:run
