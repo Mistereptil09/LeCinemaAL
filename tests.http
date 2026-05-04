@@ -21,12 +21,36 @@ Content-Type: application/json
   client.global.set("token", response.body.token.value);
 %}
 
+### Buy Ticket (requires login first)
+POST http://localhost:3333/api/v1/tickets
+Content-Type: application/json
+Authorization: Bearer oat_MQ.WGx2UDZkN3o4YUZWWVVBbGsxdWtEYXJob1RIbEU0eHV2VG1wUXVyRTE0MTE1Nzk0NA
+
+{
+  "type": "standard"
+}
+
+### My Tickets (requires login first)
+GET http://localhost:3333/api/v1/tickets/me
+Authorization: Bearer oat_MQ.WGx2UDZkN3o4YUZWWVVBbGsxdWtEYXJob1RIbEU0eHV2VG1wUXVyRTE0MTE1Nzk0NA
+
+### Use Ticket (requires login first — replace 1 with your ticket ID)
+POST http://localhost:3333/api/v1/tickets/1/use
+Content-Type: application/json
+Authorization: Bearer oat_MQ.WGx2UDZkN3o4YUZWWVVBbGsxdWtEYXJob1RIbEU0eHV2VG1wUXVyRTE0MTE1Nzk0NA
+
+{
+  "screeningId": 1
+}
+
+###
+
 ### Refresh (requires login first)
 POST http://localhost:3333/api/v1/auth/refresh
-Authorization: Bearer {{token}}
+Authorization: Bearer oat_Ng.REp6dV9LZnVpTDJBczJCVXJ0XzQyTmNzUzNnOGFyM0p1bFVVU1AwXzQyNTg2NzI3NjY
 
 ### Logout (requires login first)
 POST http://localhost:3333/api/v1/auth/logout
 Authorization: Bearer {{token}}
 
-###
+

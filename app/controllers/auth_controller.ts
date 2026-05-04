@@ -16,7 +16,7 @@ export default class AuthController {
       email: data.email,
       password: data.password,
       role: 'client',
-      balance: '0',
+      wallet: '0',
     })
 
     const token = await User.accessTokens.create(user)

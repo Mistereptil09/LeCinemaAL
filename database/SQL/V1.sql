@@ -6,7 +6,7 @@ CREATE TABLE users (
                      role VARCHAR(20) NOT NULL DEFAULT 'client' CHECK (role IN ('client', 'admin', 'superadmin')),
                      first_name VARCHAR(255) NOT NULL,
                      last_name VARCHAR(255) NOT NULL,
-                     balance DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+                     wallet DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
                      created_at TIMESTAMP NOT NULL DEFAULT NOW(),
                      updated_at TIMESTAMP
 );

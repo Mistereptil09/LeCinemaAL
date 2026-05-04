@@ -11,7 +11,7 @@ export default class extends BaseSchema {
       table.string('email').notNullable().unique()
       table.string('password').notNullable()
       table.string('role').notNullable().defaultTo('user')
-      table.decimal('balance', 10, 2).notNullable().defaultTo(0)
+      table.decimal('wallet', 10, 2).notNullable().defaultTo(0)
       table.timestamp('created_at').notNullable()
       table.timestamp('updated_at').nullable()
     })
