@@ -25,11 +25,10 @@ export async function createUser(role: 'admin' | 'client' | 'superadmin' = 'admi
     lastName: `User${sequence}`,
     email: `user${sequence}@test.com`,
     password: 'password123',
-    role,
-    balance: '100.00',
+    role: role,
+    wallet: '100.00',
   })
 }
-
 export async function createMovie() {
   sequence += 1
 
