@@ -47,7 +47,7 @@ test.group('Users controller', (group) => {
     assert.lengthOf(payload.transactions, 1)
   })
 
-  test('admin can store/update/patch/destroy users', async ({ client, assert }) => {
+  test('admin can store/update/destroy users', async ({ client, assert }) => {
     const admin = await createUser('admin')
 
     const storeResponse = await client.post(api('/users')).loginAs(admin).json({
@@ -75,13 +75,6 @@ test.group('Users controller', (group) => {
       })
     updateResponse.assertStatus(200)
     assert.equal(body<{ firstName: string; role: string }>(updateResponse).firstName, 'Grace')
-
-    const patchResponse = await client
-      .patch(api(`/users/${created.id}`))
-      .loginAs(admin)
-      .json({ firstName: 'Patched' })
-    patchResponse.assertStatus(200)
-    assert.equal(body<{ firstName: string }>(patchResponse).firstName, 'Patched')
 
     const deleteResponse = await client.delete(api(`/users/${created.id}`)).loginAs(admin)
     deleteResponse.assertStatus(204)

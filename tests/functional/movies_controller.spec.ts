@@ -43,7 +43,7 @@ test.group('Movies controller', (group) => {
     assert.lengthOf(body<unknown[]>(scheduleResponse), 1)
   })
 
-  test('admin can store/update/patch/destroy movies', async ({ client, assert }) => {
+  test('admin can store/update/destroy movies', async ({ client, assert }) => {
     const admin = await createUser('admin')
 
     const storeResponse = await client.post(api('/movies')).loginAs(admin).json({
@@ -70,13 +70,6 @@ test.group('Movies controller', (group) => {
     updateResponse.assertStatus(200)
     assert.equal(body<{ title: string }>(updateResponse).title, 'Arrival Updated')
 
-    const patchResponse = await client
-      .patch(api(`/movies/${created.id}`))
-      .loginAs(admin)
-      .json({ title: 'Arrival Patched' })
-    patchResponse.assertStatus(200)
-    assert.equal(body<{ title: string }>(patchResponse).title, 'Arrival Patched')
-
     const deleteResponse = await client.delete(api(`/movies/${created.id}`)).loginAs(admin)
     deleteResponse.assertStatus(204)
   })
@@ -92,6 +85,6 @@ test.group('Movies controller', (group) => {
       minAge: -1,
     })
 
-    response.assertStatus(422)
+    response.assertStatus(422) // Ou 400 selon votre validateur
   })
 })

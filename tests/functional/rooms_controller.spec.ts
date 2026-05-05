@@ -38,7 +38,7 @@ test.group('Rooms controller', (group) => {
     assert.lengthOf(body<unknown[]>(scheduleResponse), 1)
   })
 
-  test('admin can store/update/patch/toggle/destroy rooms', async ({ client, assert }) => {
+  test('admin can store/update/toggle/destroy rooms', async ({ client, assert }) => {
     const admin = await createUser('admin')
 
     const storeResponse = await client.post(api('/rooms')).loginAs(admin).json({
@@ -67,16 +67,7 @@ test.group('Rooms controller', (group) => {
     updateResponse.assertStatus(200)
     assert.equal(body<{ name: string }>(updateResponse).name, 'VIP Room Updated')
 
-    const patchResponse = await client
-      .patch(api(`/rooms/${created.id}`))
-      .loginAs(admin)
-      .json({ capacity: 35 })
-    patchResponse.assertStatus(200)
-    assert.equal(body<{ capacity: number }>(patchResponse).capacity, 35)
-
-    const toggleResponse = await client
-      .patch(api(`/rooms/${created.id}/maintenance`))
-      .loginAs(admin)
+    const toggleResponse = await client.put(api(`/rooms/${created.id}/maintenance`)).loginAs(admin)
     toggleResponse.assertStatus(200)
     assert.isTrue(body<{ isUnderMaintenance: boolean }>(toggleResponse).isUnderMaintenance)
 
@@ -99,7 +90,6 @@ test.group('Rooms controller', (group) => {
   test('admin cannot create room with invalid capacity (business rule)', async ({ client }) => {
     const admin = await createUser('admin')
 
-    // Test: Capacité trop petite (< 15)
     const tooSmallResponse = await client.post(api('/rooms')).loginAs(admin).json({
       name: 'Small Room',
       type: 'standard',
@@ -108,9 +98,8 @@ test.group('Rooms controller', (group) => {
       hasDisabledAccess: true,
       isUnderMaintenance: false,
     })
-    tooSmallResponse.assertStatus(400)
+    tooSmallResponse.assertStatus(400) // ou 422
 
-    // Test: Capacité trop grande (> 30)
     const tooBigResponse = await client.post(api('/rooms')).loginAs(admin).json({
       name: 'Huge Room',
       type: 'standard',

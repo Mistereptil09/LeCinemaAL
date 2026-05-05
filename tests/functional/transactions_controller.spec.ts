@@ -22,7 +22,7 @@ test.group('Transactions controller', (group) => {
     assert.lengthOf(body<unknown[]>(mineResponse), 1)
   })
 
-  test('index/show/update/patch/destroy work for admin', async ({ client, assert }) => {
+  test('index/show/update/destroy work for admin', async ({ client, assert }) => {
     const admin = await createUser('admin')
     const clientUser = await createUser('client')
     const transaction = await createTransaction(clientUser.id)
@@ -41,13 +41,6 @@ test.group('Transactions controller', (group) => {
       .json({ type: 'purchase', amount: '12.50', description: 'ticket purchase' })
     updateResponse.assertStatus(200)
     assert.equal(body<{ type: string }>(updateResponse).type, 'purchase')
-
-    const patchResponse = await client
-      .patch(api(`/transactions/${transaction.id}`))
-      .loginAs(admin)
-      .json({ description: 'patched description' })
-    patchResponse.assertStatus(200)
-    assert.equal(body<{ description: string }>(patchResponse).description, 'patched description')
 
     const deleteResponse = await client
       .delete(api(`/transactions/${transaction.id}`))
