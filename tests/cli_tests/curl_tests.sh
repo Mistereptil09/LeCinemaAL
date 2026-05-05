@@ -96,33 +96,36 @@ curl -i "$BASE$PREFIX/tickets/me" -H "Authorization: Bearer $USER_TOKEN"
 curl -i "$BASE$PREFIX/transactions/me" -H "Authorization: Bearer $USER_TOKEN"
 
 # Jeu de données user (plusieurs tickets + transactions)
-declare -a USER_TICKET_IDS=()
 declare -a USER_TRANSACTION_IDS=()
+declare -a USER_TICKET_IDS=()
 
-for i in $(seq 1 "$USER_TICKETS_COUNT"); do
-  USER_TICKET_RESPONSE="$(curl -s -X POST "$BASE$PREFIX/tickets" \
-    -H "Authorization: Bearer $USER_TOKEN" \
-    -H "Content-Type: application/json" \
-    -d "{\"type\":\"standard\",\"remainingUses\":$((i % 3 + 1))}")"
-  USER_TICKET_ID="$(printf '%s' "$USER_TICKET_RESPONSE" | jq -r '.id // empty')"
-  fail_if_empty "$USER_TICKET_ID" "USER_TICKET_ID[$i]" "$USER_TICKET_RESPONSE"
-  USER_TICKET_IDS+=("$USER_TICKET_ID")
-done
-
+# --- 1. ON FAIT LES DÉPÔTS D'ABORD ---
 for i in $(seq 1 "$USER_TRANSACTIONS_COUNT"); do
   USER_TRANSACTION_RESPONSE="$(curl -s -X POST "$BASE$PREFIX/transactions" \
     -H "Authorization: Bearer $USER_TOKEN" \
     -H "Content-Type: application/json" \
-    -d "{\"type\":\"deposit\",\"amount\":\"$((i * 10)).00\",\"description\":\"Seed user tx $i\"}")"
+    -d "{\"type\":\"deposit\",\"amount\":\"$((i * 10 + 50)).00\",\"description\":\"Seed user tx $i\"}")" # J'ai ajouté +50 pour être sûr d'avoir assez
+
   USER_TRANSACTION_ID="$(printf '%s' "$USER_TRANSACTION_RESPONSE" | jq -r '.id // empty')"
   fail_if_empty "$USER_TRANSACTION_ID" "USER_TRANSACTION_ID[$i]" "$USER_TRANSACTION_RESPONSE"
   USER_TRANSACTION_IDS+=("$USER_TRANSACTION_ID")
 done
 
+# --- 2. ENSUITE, ON ACHÈTE LES BILLETS ---
+for i in $(seq 1 "$USER_TICKETS_COUNT"); do
+  USER_TICKET_RESPONSE="$(curl -s -X POST "$BASE$PREFIX/tickets" \
+    -H "Authorization: Bearer $USER_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d "{\"type\":\"standard\",\"remainingUses\":$((i % 3 + 1))}")"
+
+  USER_TICKET_ID="$(printf '%s' "$USER_TICKET_RESPONSE" | jq -r '.id // empty')"
+  fail_if_empty "$USER_TICKET_ID" "USER_TICKET_ID[$i]" "$USER_TICKET_RESPONSE"
+  USER_TICKET_IDS+=("$USER_TICKET_ID")
+done
+
 PRIMARY_TICKET_ID="${USER_TICKET_IDS[0]}"
 fail_if_empty "$PRIMARY_TICKET_ID" "PRIMARY_TICKET_ID"
 echo "PRIMARY_TICKET_ID=$PRIMARY_TICKET_ID"
-
 # 7) Tests admin (si login admin disponible)
 if [ -z "$ADMIN_TOKEN" ] || [ "$ADMIN_TOKEN" = "null" ]; then
   echo "ADMIN_TOKEN absent: sections admin ignorées (users CRUD, movies CRUD, screenings, transactions, stats)."
