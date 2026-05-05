@@ -52,7 +52,7 @@ jobs:
         run: |
           node ace serve --watch=false --hmr=false > /tmp/api.log 2>&1 &
           for i in {1..30}; do
-            if curl -fsS http://127.0.0.1:3333/ >/dev/null; then
+            if curl -fsS http://localhost:3333/ >/dev/null; then
               exit 0
             fi
             sleep 1
