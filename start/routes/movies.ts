@@ -3,10 +3,11 @@ import { middleware } from '#start/kernel'
 import { appprefix } from '#start/constants'
 const MoviesController = () => import('#controllers/movies_controller')
 
+router.get('/movies/', [MoviesController, 'index'])
+router.get('/movies/:id', [MoviesController, 'show'])
+
 router
   .group(() => {
-    router.get('/', [MoviesController, 'index'])
-    router.get('/:id', [MoviesController, 'show'])
     router.get('/:id/schedule', [MoviesController, 'schedule'])
     router.post('/', [MoviesController, 'store']).use(middleware.admin())
     router.put('/:id', [MoviesController, 'update']).use(middleware.admin())
