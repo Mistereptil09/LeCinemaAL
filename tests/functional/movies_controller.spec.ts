@@ -33,7 +33,14 @@ test.group('Movies controller', (group) => {
     showResponse.assertStatus(200)
     assert.equal(body<{ id: number }>(showResponse).id, movie.id)
 
-    const scheduleResponse = await client.get(api(`/movies/${movie.id}/schedule`)).loginAs(user)
+    const scheduleResponse = await client
+      .get(api(`/movies/${movie.id}/schedule`))
+      .qs({
+        start: DateTime.now().minus({ days: 1 }).toISO(),
+        end: DateTime.now().plus({ days: 10 }).toISO(),
+      })
+      .loginAs(user)
+
     scheduleResponse.assertStatus(200)
     assert.lengthOf(body<unknown[]>(scheduleResponse), 1)
   })

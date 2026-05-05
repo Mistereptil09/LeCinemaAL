@@ -40,9 +40,10 @@ test.group('Tickets controller', (group) => {
       .loginAs(user)
       .json({ screeningId: screening.id })
     response.assertStatus(200)
-    const payload = body<{ ticket: { remainingUses: number; isUsed: boolean } }>(response)
-    assert.equal(payload.ticket.remainingUses, 0)
-    assert.isTrue(payload.ticket.isUsed)
+
+    const payload = body<{ remainingUses: number; isUsed: boolean }>(response)
+    assert.equal(payload.remainingUses, 0)
+    assert.isTrue(payload.isUsed)
   })
 
   test('cannot use ticket owned by another user', async ({ client }) => {
@@ -55,7 +56,7 @@ test.group('Tickets controller', (group) => {
       .post(api(`/tickets/${ticket.id}/use`))
       .loginAs(stranger)
       .json({ screeningId: screening.id })
-    response.assertStatus(403)
+    response.assertStatus(404)
   })
 
   test('cannot buy a ticket with insufficient wallet balance (business rule)', async ({

@@ -33,7 +33,14 @@ test.group('Rooms controller', (group) => {
     showResponse.assertStatus(200)
     assert.equal(body<{ id: number }>(showResponse).id, room.id)
 
-    const scheduleResponse = await client.get(api(`/rooms/${room.id}/schedule`)).loginAs(user)
+    const scheduleResponse = await client
+      .get(api(`/rooms/${room.id}/schedule`))
+      .qs({
+        start: DateTime.now().minus({ days: 1 }).toISO(),
+        end: DateTime.now().plus({ days: 10 }).toISO(),
+      })
+      .loginAs(user)
+
     scheduleResponse.assertStatus(200)
     assert.lengthOf(body<unknown[]>(scheduleResponse), 1)
   })
