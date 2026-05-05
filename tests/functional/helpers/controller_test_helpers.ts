@@ -60,14 +60,18 @@ export async function createScreening() {
   const movie = await createMovie()
   const room = await createRoom()
 
+  // On fixe l'heure à 14h00 pour être sûr de passer la validation d'ouverture (9h-20h)
+  const startAt = DateTime.now().set({ hour: 14, minute: 0, second: 0, millisecond: 0 })
+  const endAt = startAt.plus({ minutes: movie.duration + 30 })
+
   const screening = await Screening.create({
     movieId: movie.id,
     roomId: room.id,
-    startAt: DateTime.now().plus({ hours: 2 }),
-    endAt: DateTime.now().plus({ hours: 4 }),
+    startAt,
+    endAt,
   })
 
-  return { screening, movie, room }
+  return { movie, room, screening }
 }
 
 export async function createTicket(userId: number, remainingUses = 1, isUsed = false) {

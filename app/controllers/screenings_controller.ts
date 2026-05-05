@@ -71,7 +71,13 @@ export default class ScreeningsController {
     const endTime = startTime.plus({ minutes: movie.duration + 30 }) // Règle : durée + 30min
 
     // 2. Vérification des horaires d'ouverture (9h - 20h)
-    if (startTime.hour < 9 || endTime.hour > 20 || (endTime.hour === 20 && endTime.minute > 0)) {
+    if (
+      startTime.hour < 9 ||
+      startTime.hour >= 20 ||
+      endTime.hour >= 20 ||
+      !startTime.hasSame(endTime, 'day') ||
+      (endTime.hour === 20 && endTime.minute > 0)
+    ) {
       return response.badRequest('La séance doit se dérouler entre 9h et 20h.')
     }
 

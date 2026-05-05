@@ -68,7 +68,7 @@ export default class TicketsController {
       return response.forbidden({ message: 'Not enough ticket use left' })
     }
 
-    const screening = await Screening.findOrFail(screeningId)
+    const screening = await Screening.query().where('id', screeningId).preload('room').firstOrFail()
 
     if (screening.startAt <= DateTime.now()) {
       return response.gone({ message: 'Screening already started' })

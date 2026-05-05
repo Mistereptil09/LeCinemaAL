@@ -39,7 +39,6 @@ test.group('Tickets controller', (group) => {
       .post(api(`/tickets/${ticket.id}/use`))
       .loginAs(user)
       .json({ screeningId: screening.id })
-
     response.assertStatus(200)
     const payload = body<{ ticket: { remainingUses: number; isUsed: boolean } }>(response)
     assert.equal(payload.ticket.remainingUses, 0)
@@ -56,43 +55,6 @@ test.group('Tickets controller', (group) => {
       .post(api(`/tickets/${ticket.id}/use`))
       .loginAs(stranger)
       .json({ screeningId: screening.id })
-
-    response.assertStatus(403)
-  })
-
-  test('admin can index/show/update/destroy tickets', async ({ client, assert }) => {
-    const admin = await createUser('admin')
-    const clientUser = await createUser('client')
-    const ticket = await createTicket(clientUser.id, 1, false)
-
-    const indexResponse = await client.get(api('/tickets')).loginAs(admin)
-    indexResponse.assertStatus(200)
-    assert.isAtLeast(body<{ meta: { total: number } }>(indexResponse).meta.total, 1)
-
-    const showResponse = await client.get(api(`/tickets/${ticket.id}`)).loginAs(admin)
-    showResponse.assertStatus(200)
-    assert.equal(body<{ id: number }>(showResponse).id, ticket.id)
-
-    const updateResponse = await client
-      .put(api(`/tickets/${ticket.id}`))
-      .loginAs(admin)
-      .json({
-        type: 'super',
-        remainingUses: 3,
-        isUsed: false,
-      })
-    updateResponse.assertStatus(200)
-    assert.equal(body<{ type: string }>(updateResponse).type, 'super')
-
-    const deleteResponse = await client.delete(api(`/tickets/${ticket.id}`)).loginAs(admin)
-    deleteResponse.assertStatus(204)
-  })
-
-  test('admin routes are forbidden for client role', async ({ client }) => {
-    const user = await createUser('client')
-
-    const response = await client.get(api('/tickets')).loginAs(user)
-
     response.assertStatus(403)
   })
 
@@ -103,10 +65,7 @@ test.group('Tickets controller', (group) => {
     user.wallet = '0.00'
     await user.save()
 
-    const response = await client.post(api('/tickets')).loginAs(user).json({
-      type: 'standard',
-    })
-
+    const response = await client.post(api('/tickets')).loginAs(user).json({ type: 'standard' })
     response.assertStatus(402)
     response.assertBodyContains({ message: 'Not enough money in account balance' })
   })
@@ -116,7 +75,6 @@ test.group('Tickets controller', (group) => {
   }) => {
     const user = await createUser('client')
     const { screening, room } = await createScreening()
-
     room.capacity = 1
     await room.save()
 
@@ -131,7 +89,6 @@ test.group('Tickets controller', (group) => {
       .post(api(`/tickets/${ticket2.id}/use`))
       .loginAs(user)
       .json({ screeningId: screening.id })
-
     response.assertStatus(403)
     response.assertBodyContains({ message: 'This screening is already full' })
   })

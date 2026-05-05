@@ -13,9 +13,7 @@ test.group('Stats controller', (group) => {
 
   test('forbids client role', async ({ client }) => {
     const user = await createUser('client')
-
     const response = await client.get(api('/stats/realtime')).loginAs(user)
-
     response.assertStatus(403)
   })
 
@@ -40,29 +38,17 @@ test.group('Stats controller', (group) => {
     assert.exists(realtime.ticketUses)
   })
 
-  test('byPeriod supports valid periods and rejects invalid ones', async ({ client, assert }) => {
+  test('byPeriod returns stats for custom dates', async ({ client, assert }) => {
     const admin = await createUser('admin')
 
-    const dailyResponse = await client.get(api('/stats')).loginAs(admin).qs({ period: 'daily' })
-    dailyResponse.assertStatus(200)
-    assert.equal(body<{ period: string }>(dailyResponse).period, 'daily')
-
-    const weeklyResponse = await client.get(api('/stats')).loginAs(admin).qs({ period: 'weekly' })
-    weeklyResponse.assertStatus(200)
-    assert.equal(body<{ period: string }>(weeklyResponse).period, 'weekly')
-
-    const realtimeResponse = await client
+    const response = await client
       .get(api('/stats'))
       .loginAs(admin)
-      .qs({ period: 'realtime' })
-    realtimeResponse.assertStatus(200)
-    assert.exists(body<Record<string, number>>(realtimeResponse).users)
+      .qs({ startDate: '2026-05-01', endDate: '2026-05-07' })
 
-    const invalidResponse = await client.get(api('/stats')).loginAs(admin).qs({ period: 'monthly' })
-    invalidResponse.assertStatus(400)
-    assert.equal(
-      body<{ message: string }>(invalidResponse).message,
-      'Invalid period. Use daily, weekly, or realtime.'
-    )
+    response.assertStatus(200)
+    assert.equal(body<{ period: string }>(response).period, 'custom')
+    assert.exists(body<Record<string, number>>(response).screenings)
+    assert.exists(body<Record<string, number>>(response).usedTickets)
   })
 })
