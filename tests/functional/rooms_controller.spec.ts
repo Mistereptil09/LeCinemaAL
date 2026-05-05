@@ -95,4 +95,30 @@ test.group('Rooms controller', (group) => {
 
     response.assertStatus(403)
   })
+
+  test('admin cannot create room with invalid capacity (business rule)', async ({ client }) => {
+    const admin = await createUser('admin')
+
+    // Test: Capacité trop petite (< 15)
+    const tooSmallResponse = await client.post(api('/rooms')).loginAs(admin).json({
+      name: 'Small Room',
+      type: 'standard',
+      capacity: 10,
+      description: '...',
+      hasDisabledAccess: true,
+      isUnderMaintenance: false,
+    })
+    tooSmallResponse.assertStatus(400)
+
+    // Test: Capacité trop grande (> 30)
+    const tooBigResponse = await client.post(api('/rooms')).loginAs(admin).json({
+      name: 'Huge Room',
+      type: 'standard',
+      capacity: 35,
+      description: '...',
+      hasDisabledAccess: true,
+      isUnderMaintenance: false,
+    })
+    tooBigResponse.assertStatus(400) // ou 422
+  })
 })

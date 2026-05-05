@@ -86,4 +86,60 @@ test.group('Screenings controller', (group) => {
     const deleteResponse = await client.delete(api(`/screenings/${created.id}`)).loginAs(admin)
     deleteResponse.assertStatus(204)
   })
+
+  test('cannot schedule a screening outside of opening hours 9h-20h (business rule)', async ({
+    client,
+  }) => {
+    const admin = await createUser('admin')
+    const { movie, room } = await createScreening()
+
+    // On force une heure de début à 22h00
+    const lateStart = DateTime.now().set({ hour: 22, minute: 0 }).toISO()
+
+    const response = await client.post(api('/screenings')).loginAs(admin).json({
+      movieId: movie.id,
+      roomId: room.id,
+      startAt: lateStart,
+    })
+
+    response.assertStatus(400) // Bad Request
+  })
+
+  test('cannot schedule a screening in a room under maintenance (business rule)', async ({
+    client,
+  }) => {
+    const admin = await createUser('admin')
+    const { movie, room } = await createScreening()
+
+    // On met la salle en maintenance
+    room.isUnderMaintenance = true
+    await room.save()
+
+    const response = await client
+      .post(api('/screenings'))
+      .loginAs(admin)
+      .json({
+        movieId: movie.id,
+        roomId: room.id,
+        startAt: DateTime.now().plus({ days: 1 }).set({ hour: 14, minute: 0 }).toISO(),
+      })
+
+    response.assertStatus(403) // Forbidden
+  })
+
+  test('cannot schedule overlapping screenings in the same room (business rule)', async ({
+    client,
+  }) => {
+    const admin = await createUser('admin')
+    const { movie, room, screening } = await createScreening()
+
+    // On essaie de créer une nouvelle séance exactement en même temps que "screening"
+    const response = await client.post(api('/screenings')).loginAs(admin).json({
+      movieId: movie.id,
+      roomId: room.id,
+      startAt: screening.startAt.toISO(),
+    })
+
+    response.assertStatus(409) // Conflict
+  })
 })

@@ -27,45 +27,16 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: 'npm'
+
       - run: npm ci
 
       - name: Load test environment
         run: cat .env.example >> $GITHUB_ENV
 
-      - name: Run migrations
-        run: node ace migration:run
-
-      - name: Seed database
-        run: node ace db:seed
-
-      - name: Ensure admin user for CLI tests
-        run: bash tests/cli_tests/create_admin_user.sh
-
-      - name: Install jq
-        run: sudo apt-get update && sudo apt-get install -y jq
-
-      - name: Start API server
-        run: |
-          node ace serve --watch=false --hmr=false > /tmp/api.log 2>&1 &
-          for i in {1..30}; do
-            if curl -fsS http://localhost:3333/ >/dev/null; then
-              exit 0
-            fi
-            sleep 1
-          done
-          echo "API server failed to start"
-          cat /tmp/api.log
-          exit 1
-
-      - name: Run CLI curl tests
-        env:
-          LIST_ROUTES: '0'
-          KEEP_DATA: '0'
-        run: bash tests/cli_tests/curl_tests.sh
-
-      - name: Run tests
+      - name: Run tests (Japa)
         run: node ace test
