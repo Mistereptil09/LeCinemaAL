@@ -74,6 +74,17 @@ export default class TicketsController {
       return response.gone({ message: 'Screening already started' })
     }
 
+    // Condition par rapport au nombres de personnes
+    const usedTicketsCount = await TicketUse.query()
+      .where('screeningId', screeningId)
+      .count('* as total')
+
+    const totalUsed = Number(usedTicketsCount[0].$extras.total)
+
+    if (totalUsed >= screening.room.capacity) {
+      return response.forbidden({ message: 'This screening is already full' })
+    }
+
     const existingUse = await TicketUse.query()
       .whereHas('ticket', (query) => {
         query.where('userId', user.id)
