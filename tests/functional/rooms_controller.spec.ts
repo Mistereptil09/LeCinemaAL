@@ -67,7 +67,9 @@ test.group('Rooms controller', (group) => {
     updateResponse.assertStatus(200)
     assert.equal(body<{ name: string }>(updateResponse).name, 'VIP Room Updated')
 
-    const toggleResponse = await client.put(api(`/rooms/${created.id}/maintenance`)).loginAs(admin)
+    const toggleResponse = await client
+      .patch(api(`/rooms/${created.id}/maintenance`))
+      .loginAs(admin)
     toggleResponse.assertStatus(200)
     assert.isTrue(body<{ isUnderMaintenance: boolean }>(toggleResponse).isUnderMaintenance)
 
