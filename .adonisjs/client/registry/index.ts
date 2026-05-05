@@ -48,6 +48,30 @@ const routes = {
     tokens: [{"old":"/api/v1/users/:id","type":0,"val":"api","end":""},{"old":"/api/v1/users/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/users/:id","type":0,"val":"users","end":""},{"old":"/api/v1/users/:id","type":1,"val":"id","end":""}],
     types: placeholder as Registry['users.show']['types'],
   },
+  'users.store': {
+    methods: ["POST"],
+    pattern: '/api/v1/users',
+    tokens: [{"old":"/api/v1/users","type":0,"val":"api","end":""},{"old":"/api/v1/users","type":0,"val":"v1","end":""},{"old":"/api/v1/users","type":0,"val":"users","end":""}],
+    types: placeholder as Registry['users.store']['types'],
+  },
+  'users.update': {
+    methods: ["PUT"],
+    pattern: '/api/v1/users/:id',
+    tokens: [{"old":"/api/v1/users/:id","type":0,"val":"api","end":""},{"old":"/api/v1/users/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/users/:id","type":0,"val":"users","end":""},{"old":"/api/v1/users/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['users.update']['types'],
+  },
+  'users.patch': {
+    methods: ["PATCH"],
+    pattern: '/api/v1/users/:id',
+    tokens: [{"old":"/api/v1/users/:id","type":0,"val":"api","end":""},{"old":"/api/v1/users/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/users/:id","type":0,"val":"users","end":""},{"old":"/api/v1/users/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['users.patch']['types'],
+  },
+  'users.destroy': {
+    methods: ["DELETE"],
+    pattern: '/api/v1/users/:id',
+    tokens: [{"old":"/api/v1/users/:id","type":0,"val":"api","end":""},{"old":"/api/v1/users/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/users/:id","type":0,"val":"users","end":""},{"old":"/api/v1/users/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['users.destroy']['types'],
+  },
   'rooms.index': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/rooms',
@@ -78,17 +102,23 @@ const routes = {
     tokens: [{"old":"/api/v1/rooms/:id","type":0,"val":"api","end":""},{"old":"/api/v1/rooms/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/rooms/:id","type":0,"val":"rooms","end":""},{"old":"/api/v1/rooms/:id","type":1,"val":"id","end":""}],
     types: placeholder as Registry['rooms.update']['types'],
   },
-  'rooms.destroy': {
-    methods: ["DELETE"],
+  'rooms.patch': {
+    methods: ["PATCH"],
     pattern: '/api/v1/rooms/:id',
     tokens: [{"old":"/api/v1/rooms/:id","type":0,"val":"api","end":""},{"old":"/api/v1/rooms/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/rooms/:id","type":0,"val":"rooms","end":""},{"old":"/api/v1/rooms/:id","type":1,"val":"id","end":""}],
-    types: placeholder as Registry['rooms.destroy']['types'],
+    types: placeholder as Registry['rooms.patch']['types'],
   },
   'rooms.toggle_maintenance': {
     methods: ["PATCH"],
     pattern: '/api/v1/rooms/:id/maintenance',
     tokens: [{"old":"/api/v1/rooms/:id/maintenance","type":0,"val":"api","end":""},{"old":"/api/v1/rooms/:id/maintenance","type":0,"val":"v1","end":""},{"old":"/api/v1/rooms/:id/maintenance","type":0,"val":"rooms","end":""},{"old":"/api/v1/rooms/:id/maintenance","type":1,"val":"id","end":""},{"old":"/api/v1/rooms/:id/maintenance","type":0,"val":"maintenance","end":""}],
     types: placeholder as Registry['rooms.toggle_maintenance']['types'],
+  },
+  'rooms.destroy': {
+    methods: ["DELETE"],
+    pattern: '/api/v1/rooms/:id',
+    tokens: [{"old":"/api/v1/rooms/:id","type":0,"val":"api","end":""},{"old":"/api/v1/rooms/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/rooms/:id","type":0,"val":"rooms","end":""},{"old":"/api/v1/rooms/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['rooms.destroy']['types'],
   },
   'movies.index': {
     methods: ["GET","HEAD"],
@@ -119,6 +149,12 @@ const routes = {
     pattern: '/api/v1/movies/:id',
     tokens: [{"old":"/api/v1/movies/:id","type":0,"val":"api","end":""},{"old":"/api/v1/movies/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/movies/:id","type":0,"val":"movies","end":""},{"old":"/api/v1/movies/:id","type":1,"val":"id","end":""}],
     types: placeholder as Registry['movies.update']['types'],
+  },
+  'movies.patch': {
+    methods: ["PATCH"],
+    pattern: '/api/v1/movies/:id',
+    tokens: [{"old":"/api/v1/movies/:id","type":0,"val":"api","end":""},{"old":"/api/v1/movies/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/movies/:id","type":0,"val":"movies","end":""},{"old":"/api/v1/movies/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['movies.patch']['types'],
   },
   'movies.destroy': {
     methods: ["DELETE"],
@@ -156,11 +192,23 @@ const routes = {
     tokens: [{"old":"/api/v1/screenings/:id","type":0,"val":"api","end":""},{"old":"/api/v1/screenings/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/screenings/:id","type":0,"val":"screenings","end":""},{"old":"/api/v1/screenings/:id","type":1,"val":"id","end":""}],
     types: placeholder as Registry['screenings.update']['types'],
   },
+  'screenings.patch': {
+    methods: ["PATCH"],
+    pattern: '/api/v1/screenings/:id',
+    tokens: [{"old":"/api/v1/screenings/:id","type":0,"val":"api","end":""},{"old":"/api/v1/screenings/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/screenings/:id","type":0,"val":"screenings","end":""},{"old":"/api/v1/screenings/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['screenings.patch']['types'],
+  },
   'screenings.destroy': {
     methods: ["DELETE"],
     pattern: '/api/v1/screenings/:id',
     tokens: [{"old":"/api/v1/screenings/:id","type":0,"val":"api","end":""},{"old":"/api/v1/screenings/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/screenings/:id","type":0,"val":"screenings","end":""},{"old":"/api/v1/screenings/:id","type":1,"val":"id","end":""}],
     types: placeholder as Registry['screenings.destroy']['types'],
+  },
+  'tickets.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/tickets',
+    tokens: [{"old":"/api/v1/tickets","type":0,"val":"api","end":""},{"old":"/api/v1/tickets","type":0,"val":"v1","end":""},{"old":"/api/v1/tickets","type":0,"val":"tickets","end":""}],
+    types: placeholder as Registry['tickets.index']['types'],
   },
   'tickets.my_tickets': {
     methods: ["GET","HEAD"],
@@ -168,11 +216,35 @@ const routes = {
     tokens: [{"old":"/api/v1/tickets/me","type":0,"val":"api","end":""},{"old":"/api/v1/tickets/me","type":0,"val":"v1","end":""},{"old":"/api/v1/tickets/me","type":0,"val":"tickets","end":""},{"old":"/api/v1/tickets/me","type":0,"val":"me","end":""}],
     types: placeholder as Registry['tickets.my_tickets']['types'],
   },
+  'tickets.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/tickets/:id',
+    tokens: [{"old":"/api/v1/tickets/:id","type":0,"val":"api","end":""},{"old":"/api/v1/tickets/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/tickets/:id","type":0,"val":"tickets","end":""},{"old":"/api/v1/tickets/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['tickets.show']['types'],
+  },
   'tickets.store': {
     methods: ["POST"],
     pattern: '/api/v1/tickets',
     tokens: [{"old":"/api/v1/tickets","type":0,"val":"api","end":""},{"old":"/api/v1/tickets","type":0,"val":"v1","end":""},{"old":"/api/v1/tickets","type":0,"val":"tickets","end":""}],
     types: placeholder as Registry['tickets.store']['types'],
+  },
+  'tickets.update': {
+    methods: ["PUT"],
+    pattern: '/api/v1/tickets/:id',
+    tokens: [{"old":"/api/v1/tickets/:id","type":0,"val":"api","end":""},{"old":"/api/v1/tickets/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/tickets/:id","type":0,"val":"tickets","end":""},{"old":"/api/v1/tickets/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['tickets.update']['types'],
+  },
+  'tickets.patch': {
+    methods: ["PATCH"],
+    pattern: '/api/v1/tickets/:id',
+    tokens: [{"old":"/api/v1/tickets/:id","type":0,"val":"api","end":""},{"old":"/api/v1/tickets/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/tickets/:id","type":0,"val":"tickets","end":""},{"old":"/api/v1/tickets/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['tickets.patch']['types'],
+  },
+  'tickets.destroy': {
+    methods: ["DELETE"],
+    pattern: '/api/v1/tickets/:id',
+    tokens: [{"old":"/api/v1/tickets/:id","type":0,"val":"api","end":""},{"old":"/api/v1/tickets/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/tickets/:id","type":0,"val":"tickets","end":""},{"old":"/api/v1/tickets/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['tickets.destroy']['types'],
   },
   'tickets.use': {
     methods: ["POST"],

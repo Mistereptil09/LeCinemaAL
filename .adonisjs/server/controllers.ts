@@ -10,7 +10,8 @@ export const controllers = {
   Profile: () => import('#controllers/profile_controller'),
   Rooms: () => import('#controllers/rooms_controller'),
   Screenings: () => import('#controllers/screenings_controller'),
-  Statss: () => import('#controllers/statss_controller'),
+  Stats: () => import('#controllers/stats_controller'),
   Tickets: () => import('#controllers/tickets_controller'),
+  Transactions: () => import('#controllers/transactions_controller'),
   Users: () => import('#controllers/users_controller'),
 }

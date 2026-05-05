@@ -16,6 +16,7 @@ import './routes/rooms.ts'
 import './routes/movies.ts'
 import './routes/screenings.ts'
 import './routes/tickets.ts'
+import './routes/transactions.ts'
 import './routes/stats.ts'
 
 router.get('/', () => {
