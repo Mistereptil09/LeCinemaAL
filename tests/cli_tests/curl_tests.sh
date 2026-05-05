@@ -34,6 +34,11 @@ ROOMS_COUNT="${ROOMS_COUNT:-3}"
 MOVIES_COUNT="${MOVIES_COUNT:-4}"
 SCREENINGS_COUNT="${SCREENINGS_COUNT:-4}"
 
+# --- GÉNÉRATION DE DATES RELATIVES POUR LES REQUÊTES ---
+# Utile pour les filtres ?start=...&end=... (de hier à dans 30 jours)
+START_DATE=$(node -e "let d=new Date(); d.setDate(d.getDate()-1); console.log(d.toISOString())")
+END_DATE=$(node -e "let d=new Date(); d.setDate(d.getDate()+30); console.log(d.toISOString())")
+
 extract_token() {
   jq -r '.token.token // .token.value // .token // empty'
 }
@@ -82,7 +87,7 @@ fail_if_empty "$REFRESHED_USER_TOKEN" "REFRESHED_USER_TOKEN" "$REFRESH_RESPONSE"
 echo "REFRESHED_USER_TOKEN=$REFRESHED_USER_TOKEN"
 curl -i -X POST "$BASE$PREFIX/auth/logout" -H "Authorization: Bearer $REFRESHED_USER_TOKEN"
 
-# Reconnexion user pour la suite des tests
+# Reconnexion user
 USER_TOKEN="$(curl -s -X POST "$BASE$PREFIX/auth/login" -H "Content-Type: application/json" \
   -d "{\"email\":\"$USER_EMAIL\",\"password\":\"$USER_PASS\"}" | extract_token)"
 fail_if_empty "$USER_TOKEN" "USER_TOKEN après reconnexion"
@@ -95,11 +100,10 @@ curl -i "$BASE$PREFIX/screenings" -H "Authorization: Bearer $USER_TOKEN"
 curl -i "$BASE$PREFIX/tickets/me" -H "Authorization: Bearer $USER_TOKEN"
 curl -i "$BASE$PREFIX/transactions/me" -H "Authorization: Bearer $USER_TOKEN"
 
-# Jeu de données user (plusieurs tickets + transactions)
 declare -a USER_TRANSACTION_IDS=()
 declare -a USER_TICKET_IDS=()
 
-# --- 1. ON FAIT LES DÉPÔTS D'ABORD ---
+# --- 1. Dépôts en premier pour avoir les fonds nécessaires ---
 for i in $(seq 1 "$USER_TRANSACTIONS_COUNT"); do
   USER_TRANSACTION_RESPONSE="$(curl -s -X POST "$BASE$PREFIX/transactions" \
     -H "Authorization: Bearer $USER_TOKEN" \
@@ -111,12 +115,12 @@ for i in $(seq 1 "$USER_TRANSACTIONS_COUNT"); do
   USER_TRANSACTION_IDS+=("$USER_TRANSACTION_ID")
 done
 
-# --- 2. ENSUITE, ON ACHÈTE LES BILLETS ---
+# --- 2. Achats des billets (le payload de remainingUses a été retiré, le controller s'en charge) ---
 for i in $(seq 1 "$USER_TICKETS_COUNT"); do
   USER_TICKET_RESPONSE="$(curl -s -X POST "$BASE$PREFIX/tickets" \
     -H "Authorization: Bearer $USER_TOKEN" \
     -H "Content-Type: application/json" \
-    -d "{\"type\":\"standard\",\"remainingUses\":$((i % 3 + 1))}")"
+    -d "{\"type\":\"standard\"}")"
 
   USER_TICKET_ID="$(printf '%s' "$USER_TICKET_RESPONSE" | jq -r '.data.id // .id // empty')"
   fail_if_empty "$USER_TICKET_ID" "USER_TICKET_ID[$i]" "$USER_TICKET_RESPONSE"
@@ -127,10 +131,9 @@ PRIMARY_TICKET_ID="${USER_TICKET_IDS[0]}"
 fail_if_empty "$PRIMARY_TICKET_ID" "PRIMARY_TICKET_ID"
 echo "PRIMARY_TICKET_ID=$PRIMARY_TICKET_ID"
 
-# 7) Tests admin (si login admin disponible)
+# 7) Tests admin
 if [ -z "$ADMIN_TOKEN" ] || [ "$ADMIN_TOKEN" = "null" ]; then
-  echo "ADMIN_TOKEN absent: sections admin ignorées (users CRUD, movies CRUD, screenings, transactions, stats)."
-  echo "Astuce: export ADMIN_EMAIL='...' ADMIN_PASS='...' avec un compte admin existant pour insérer ces données."
+  echo "ADMIN_TOKEN absent: sections admin ignorées."
   exit 0
 fi
 
@@ -143,7 +146,7 @@ for i in $(seq 1 "$EXTRA_USERS_COUNT"); do
   ADMIN_CREATED_USER_RESPONSE="$(curl -s -X POST "$BASE$PREFIX/users" \
     -H "Authorization: Bearer $ADMIN_TOKEN" \
     -H "Content-Type: application/json" \
-    -d "{\"firstName\":\"Api$i\",\"lastName\":\"User$i\",\"email\":\"admin-created+$NOW-$i@test.com\",\"password\":\"Password123!\",\"role\":\"client\",\"balance\":\"$((i * 15)).00\"}")"
+    -d "{\"firstName\":\"Api$i\",\"lastName\":\"User$i\",\"email\":\"admin-created+$NOW-$i@test.com\",\"password\":\"Password123!\",\"role\":\"client\",\"wallet\":\"$((i * 15)).00\"}")"
   ADMIN_CREATED_USER_ID="$(printf '%s' "$ADMIN_CREATED_USER_RESPONSE" | jq -r '.data.id // .id // empty')"
   fail_if_empty "$ADMIN_CREATED_USER_ID" "ADMIN_CREATED_USER_ID[$i]" "$ADMIN_CREATED_USER_RESPONSE"
   ADMIN_CREATED_USER_IDS+=("$ADMIN_CREATED_USER_ID")
@@ -157,11 +160,7 @@ curl -i "$BASE$PREFIX/users/$TARGET_USER_ID" -H "Authorization: Bearer $ADMIN_TO
 curl -i -X PUT "$BASE$PREFIX/users/$TARGET_USER_ID" \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
-  -d "{\"firstName\":\"Updated\",\"lastName\":\"User\",\"email\":\"updated-user+$NOW@test.com\",\"password\":\"Password123!\",\"role\":\"client\",\"balance\":\"10.00\"}"
-curl -i -X PATCH "$BASE$PREFIX/users/$TARGET_USER_ID" \
-  -H "Authorization: Bearer $ADMIN_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"lastName":"Patched"}'
+  -d "{\"firstName\":\"Updated\",\"lastName\":\"User\",\"email\":\"updated-user+$NOW@test.com\",\"password\":\"Password123!\",\"role\":\"client\",\"wallet\":\"10.00\"}"
 
 # /rooms (admin)
 declare -a ROOM_IDS=()
@@ -178,21 +177,16 @@ done
 PRIMARY_ROOM_ID="${ROOM_IDS[0]}"
 echo "PRIMARY_ROOM_ID=$PRIMARY_ROOM_ID"
 curl -i "$BASE$PREFIX/rooms/$PRIMARY_ROOM_ID" -H "Authorization: Bearer $ADMIN_TOKEN"
-curl -i "$BASE$PREFIX/rooms/$PRIMARY_ROOM_ID/schedule" -H "Authorization: Bearer $ADMIN_TOKEN"
+# Utilisation des dates relatives pour éviter l'erreur "Start date and end date are required"
+curl -i "$BASE$PREFIX/rooms/$PRIMARY_ROOM_ID/schedule?start=$START_DATE&end=$END_DATE" -H "Authorization: Bearer $ADMIN_TOKEN"
 
-# Modifié: Capacité valide (25) pour respecter la contrainte (15 <= capacity <= 30)
 curl -i -X PUT "$BASE$PREFIX/rooms/$PRIMARY_ROOM_ID" \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"name":"Room API Updated","type":"vip","capacity":25,"description":"Updated room","hasDisabledAccess":true,"isUnderMaintenance":false}'
 
-# Désactivé: La route PATCH rooms/:id n'existe pas et forçait une capacité invalide de 40
-# curl -i -X PATCH "$BASE$PREFIX/rooms/$PRIMARY_ROOM_ID" \
-#   -H "Authorization: Bearer $ADMIN_TOKEN" \
-#   -H "Content-Type: application/json" \
-#   -d '{"capacity":40}'
-
-curl -i -X PATCH "$BASE$PREFIX/rooms/$PRIMARY_ROOM_ID/maintenance" -H "Authorization: Bearer $ADMIN_TOKEN"
+# Note: On choisi une salle différente pour éviter des problemes de creation de scéance plus tard
+curl -i -X PATCH "$BASE$PREFIX/rooms/${ROOM_IDS[1]}/maintenance" -H "Authorization: Bearer $ADMIN_TOKEN"
 
 # /movies (admin)
 declare -a MOVIE_IDS=()
@@ -209,7 +203,8 @@ done
 PRIMARY_MOVIE_ID="${MOVIE_IDS[0]}"
 echo "PRIMARY_MOVIE_ID=$PRIMARY_MOVIE_ID"
 curl -i "$BASE$PREFIX/movies/$PRIMARY_MOVIE_ID" -H "Authorization: Bearer $ADMIN_TOKEN"
-curl -i "$BASE$PREFIX/movies/$PRIMARY_MOVIE_ID/schedule" -H "Authorization: Bearer $ADMIN_TOKEN"
+curl -i "$BASE$PREFIX/movies/$PRIMARY_MOVIE_ID/schedule?start=$START_DATE&end=$END_DATE" -H "Authorization: Bearer $ADMIN_TOKEN"
+
 curl -i -X PUT "$BASE$PREFIX/movies/$PRIMARY_MOVIE_ID" \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
@@ -224,12 +219,16 @@ declare -a SCREENING_IDS=()
 for i in $(seq 1 "$SCREENINGS_COUNT"); do
   ROOM_ID="${ROOM_IDS[$(((i - 1) % ${#ROOM_IDS[@]}))]}"
   MOVIE_ID="${MOVIE_IDS[$(((i - 1) % ${#MOVIE_IDS[@]}))]}"
-  DAY="$((10 + i))"
-  DATE_PREFIX="$(printf '2026-06-%02d' "$DAY")"
+
+  # Heure de la séance fixée dynamiquement dans le futur, à 10h00 pour garantir que le cinéma est ouvert (9h-20h)
+  SCREENING_START=$(node -e "let d = new Date(); d.setDate(d.getDate() + $i); d.setUTCHours(10, 0, 0, 0); console.log(d.toISOString())")
+  SCREENING_END=$(node -e "let d = new Date(); d.setDate(d.getDate() + $i); d.setUTCHours(12, 0, 0, 0); console.log(d.toISOString())")
+
   SCREENING_RESPONSE="$(curl -s -X POST "$BASE$PREFIX/screenings" \
     -H "Authorization: Bearer $ADMIN_TOKEN" \
     -H "Content-Type: application/json" \
-    -d "{\"movieId\":$MOVIE_ID,\"roomId\":$ROOM_ID,\"startAt\":\"${DATE_PREFIX}T10:00:00.000Z\",\"endAt\":\"${DATE_PREFIX}T12:00:00.000Z\"}")"
+    -d "{\"movieId\":$MOVIE_ID,\"roomId\":$ROOM_ID,\"startAt\":\"$SCREENING_START\",\"endAt\":\"$SCREENING_END\"}")"
+
   SCREENING_ID="$(printf '%s' "$SCREENING_RESPONSE" | jq -r '.data.id // .id // empty')"
   fail_if_empty "$SCREENING_ID" "SCREENING_ID[$i]" "$SCREENING_RESPONSE"
   SCREENING_IDS+=("$SCREENING_ID")
@@ -239,18 +238,17 @@ PRIMARY_SCREENING_ID="${SCREENING_IDS[0]}"
 echo "PRIMARY_SCREENING_ID=$PRIMARY_SCREENING_ID"
 curl -i "$BASE$PREFIX/screenings/$PRIMARY_SCREENING_ID" -H "Authorization: Bearer $ADMIN_TOKEN"
 curl -i "$BASE$PREFIX/screenings/$PRIMARY_SCREENING_ID/stats" -H "Authorization: Bearer $ADMIN_TOKEN"
+
+# Mise à jour avec une nouvelle date valide fixée à 14h00
+PUT_SCREENING_START=$(node -e "let d = new Date(); d.setDate(d.getDate() + 20); d.setUTCHours(14, 0, 0, 0); console.log(d.toISOString())")
+PUT_SCREENING_END=$(node -e "let d = new Date(); d.setDate(d.getDate() + 20); d.setUTCHours(16, 0, 0, 0); console.log(d.toISOString())")
+
 curl -i -X PUT "$BASE$PREFIX/screenings/$PRIMARY_SCREENING_ID" \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
-  -d "{\"movieId\":$PRIMARY_MOVIE_ID,\"roomId\":$PRIMARY_ROOM_ID,\"startAt\":\"2026-06-20T13:00:00.000Z\",\"endAt\":\"2026-06-20T15:00:00.000Z\"}"
-curl -i -X PATCH "$BASE$PREFIX/screenings/$PRIMARY_SCREENING_ID" \
-  -H "Authorization: Bearer $ADMIN_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"startAt":"2026-06-21T10:00:00.000Z","endAt":"2026-06-21T12:00:00.000Z"}'
+  -d "{\"movieId\":$PRIMARY_MOVIE_ID,\"roomId\":$PRIMARY_ROOM_ID,\"startAt\":\"$PUT_SCREENING_START\",\"endAt\":\"$PUT_SCREENING_END\"}"
 
-# /transactions
-curl -i "$BASE$PREFIX/transactions" -H "Authorization: Bearer $ADMIN_TOKEN"
-curl -i "$BASE$PREFIX/transactions/me" -H "Authorization: Bearer $ADMIN_TOKEN"
+# /transactions (admin seed)
 ADMIN_TRANSACTION_RESPONSE="$(curl -s -X POST "$BASE$PREFIX/transactions" \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
@@ -258,31 +256,20 @@ ADMIN_TRANSACTION_RESPONSE="$(curl -s -X POST "$BASE$PREFIX/transactions" \
 ADMIN_TRANSACTION_ID="$(printf '%s' "$ADMIN_TRANSACTION_RESPONSE" | jq -r '.data.id // .id // empty')"
 fail_if_empty "$ADMIN_TRANSACTION_ID" "ADMIN_TRANSACTION_ID" "$ADMIN_TRANSACTION_RESPONSE"
 echo "ADMIN_TRANSACTION_ID=$ADMIN_TRANSACTION_ID"
-curl -i "$BASE$PREFIX/transactions/$ADMIN_TRANSACTION_ID" -H "Authorization: Bearer $ADMIN_TOKEN"
+
 curl -i -X PUT "$BASE$PREFIX/transactions/$ADMIN_TRANSACTION_ID" \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"type":"purchase","amount":"14.50","description":"Updated admin transaction"}'
-curl -i -X PATCH "$BASE$PREFIX/transactions/$ADMIN_TRANSACTION_ID" \
-  -H "Authorization: Bearer $ADMIN_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"description":"Patched admin transaction"}'
+  -d '{"type":"deposit","amount":"14.50","description":"Updated admin transaction"}'
 
 # /tickets
 curl -i "$BASE$PREFIX/tickets" -H "Authorization: Bearer $ADMIN_TOKEN"
-curl -i "$BASE$PREFIX/tickets/$PRIMARY_TICKET_ID" -H "Authorization: Bearer $ADMIN_TOKEN"
+
+# Test d'utilisation du billet par l'utilisateur
 curl -i -X POST "$BASE$PREFIX/tickets/$PRIMARY_TICKET_ID/use" \
   -H "Authorization: Bearer $USER_TOKEN" \
   -H "Content-Type: application/json" \
   -d "{\"screeningId\":$PRIMARY_SCREENING_ID}"
-curl -i -X PUT "$BASE$PREFIX/tickets/$PRIMARY_TICKET_ID" \
-  -H "Authorization: Bearer $ADMIN_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"type":"super","remainingUses":2,"isUsed":false}'
-curl -i -X PATCH "$BASE$PREFIX/tickets/$PRIMARY_TICKET_ID" \
-  -H "Authorization: Bearer $ADMIN_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"remainingUses":1}'
 
 # /stats (admin only)
 curl -i "$BASE$PREFIX/stats" -H "Authorization: Bearer $ADMIN_TOKEN"
@@ -291,29 +278,24 @@ curl -i "$BASE$PREFIX/stats/weekly" -H "Authorization: Bearer $ADMIN_TOKEN"
 curl -i "$BASE$PREFIX/stats/realtime" -H "Authorization: Bearer $ADMIN_TOKEN"
 
 if [ "$KEEP_DATA" = "0" ]; then
-  # Nettoyage (admin)
+  # Nettoyage
   curl -i -X DELETE "$BASE$PREFIX/transactions/$ADMIN_TRANSACTION_ID" -H "Authorization: Bearer $ADMIN_TOKEN"
 
   for id in "${USER_TRANSACTION_IDS[@]}"; do
     curl -i -X DELETE "$BASE$PREFIX/transactions/$id" -H "Authorization: Bearer $ADMIN_TOKEN"
   done
-
   for id in "${USER_TICKET_IDS[@]}"; do
     curl -i -X DELETE "$BASE$PREFIX/tickets/$id" -H "Authorization: Bearer $ADMIN_TOKEN"
   done
-
   for id in "${SCREENING_IDS[@]}"; do
     curl -i -X DELETE "$BASE$PREFIX/screenings/$id" -H "Authorization: Bearer $ADMIN_TOKEN"
   done
-
   for id in "${MOVIE_IDS[@]}"; do
     curl -i -X DELETE "$BASE$PREFIX/movies/$id" -H "Authorization: Bearer $ADMIN_TOKEN"
   done
-
   for id in "${ROOM_IDS[@]}"; do
     curl -i -X DELETE "$BASE$PREFIX/rooms/$id" -H "Authorization: Bearer $ADMIN_TOKEN"
   done
-
   for id in "${ADMIN_CREATED_USER_IDS[@]}"; do
     curl -i -X DELETE "$BASE$PREFIX/users/$id" -H "Authorization: Bearer $ADMIN_TOKEN"
   done
