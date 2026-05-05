@@ -56,7 +56,7 @@ test.group('Users controller', (group) => {
       email: 'ada@test.com',
       password: 'password123',
       role: 'client',
-      balance: '20.00',
+      wallet: '20.00',
     })
     storeResponse.assertStatus(201)
     const created = body<{ id: number; firstName: string }>(storeResponse)
@@ -71,7 +71,7 @@ test.group('Users controller', (group) => {
         email: 'grace@test.com',
         password: 'password123',
         role: 'admin',
-        balance: '50.00',
+        wallet: '50.00',
       })
     updateResponse.assertStatus(200)
     assert.equal(body<{ firstName: string; role: string }>(updateResponse).firstName, 'Grace')
