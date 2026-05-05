@@ -104,9 +104,9 @@ for i in $(seq 1 "$USER_TRANSACTIONS_COUNT"); do
   USER_TRANSACTION_RESPONSE="$(curl -s -X POST "$BASE$PREFIX/transactions" \
     -H "Authorization: Bearer $USER_TOKEN" \
     -H "Content-Type: application/json" \
-    -d "{\"type\":\"deposit\",\"amount\":\"$((i * 10 + 50)).00\",\"description\":\"Seed user tx $i\"}")" # J'ai ajouté +50 pour être sûr d'avoir assez
+    -d "{\"type\":\"deposit\",\"amount\":\"$((i * 10 + 50)).00\",\"description\":\"Seed user tx $i\"}")"
 
-  USER_TRANSACTION_ID="$(printf '%s' "$USER_TRANSACTION_RESPONSE" | jq -r '.id // empty')"
+  USER_TRANSACTION_ID="$(printf '%s' "$USER_TRANSACTION_RESPONSE" | jq -r '.data.id // .id // empty')"
   fail_if_empty "$USER_TRANSACTION_ID" "USER_TRANSACTION_ID[$i]" "$USER_TRANSACTION_RESPONSE"
   USER_TRANSACTION_IDS+=("$USER_TRANSACTION_ID")
 done
@@ -118,7 +118,7 @@ for i in $(seq 1 "$USER_TICKETS_COUNT"); do
     -H "Content-Type: application/json" \
     -d "{\"type\":\"standard\",\"remainingUses\":$((i % 3 + 1))}")"
 
-  USER_TICKET_ID="$(printf '%s' "$USER_TICKET_RESPONSE" | jq -r '.id // empty')"
+  USER_TICKET_ID="$(printf '%s' "$USER_TICKET_RESPONSE" | jq -r '.data.id // .id // empty')"
   fail_if_empty "$USER_TICKET_ID" "USER_TICKET_ID[$i]" "$USER_TICKET_RESPONSE"
   USER_TICKET_IDS+=("$USER_TICKET_ID")
 done
@@ -126,6 +126,7 @@ done
 PRIMARY_TICKET_ID="${USER_TICKET_IDS[0]}"
 fail_if_empty "$PRIMARY_TICKET_ID" "PRIMARY_TICKET_ID"
 echo "PRIMARY_TICKET_ID=$PRIMARY_TICKET_ID"
+
 # 7) Tests admin (si login admin disponible)
 if [ -z "$ADMIN_TOKEN" ] || [ "$ADMIN_TOKEN" = "null" ]; then
   echo "ADMIN_TOKEN absent: sections admin ignorées (users CRUD, movies CRUD, screenings, transactions, stats)."
@@ -143,7 +144,7 @@ for i in $(seq 1 "$EXTRA_USERS_COUNT"); do
     -H "Authorization: Bearer $ADMIN_TOKEN" \
     -H "Content-Type: application/json" \
     -d "{\"firstName\":\"Api$i\",\"lastName\":\"User$i\",\"email\":\"admin-created+$NOW-$i@test.com\",\"password\":\"Password123!\",\"role\":\"client\",\"balance\":\"$((i * 15)).00\"}")"
-  ADMIN_CREATED_USER_ID="$(printf '%s' "$ADMIN_CREATED_USER_RESPONSE" | jq -r '.id // empty')"
+  ADMIN_CREATED_USER_ID="$(printf '%s' "$ADMIN_CREATED_USER_RESPONSE" | jq -r '.data.id // .id // empty')"
   fail_if_empty "$ADMIN_CREATED_USER_ID" "ADMIN_CREATED_USER_ID[$i]" "$ADMIN_CREATED_USER_RESPONSE"
   ADMIN_CREATED_USER_IDS+=("$ADMIN_CREATED_USER_ID")
 done
@@ -169,7 +170,7 @@ for i in $(seq 1 "$ROOMS_COUNT"); do
     -H "Authorization: Bearer $ADMIN_TOKEN" \
     -H "Content-Type: application/json" \
     -d "{\"name\":\"Room API $i\",\"type\":\"standard\",\"capacity\":$((18 + i * 2)),\"description\":\"Room $i from curl tests\",\"hasDisabledAccess\":true,\"isUnderMaintenance\":false}")"
-  ROOM_ID="$(printf '%s' "$ROOM_RESPONSE" | jq -r '.id // empty')"
+  ROOM_ID="$(printf '%s' "$ROOM_RESPONSE" | jq -r '.data.id // .id // empty')"
   fail_if_empty "$ROOM_ID" "ROOM_ID[$i]" "$ROOM_RESPONSE"
   ROOM_IDS+=("$ROOM_ID")
 done
@@ -178,14 +179,19 @@ PRIMARY_ROOM_ID="${ROOM_IDS[0]}"
 echo "PRIMARY_ROOM_ID=$PRIMARY_ROOM_ID"
 curl -i "$BASE$PREFIX/rooms/$PRIMARY_ROOM_ID" -H "Authorization: Bearer $ADMIN_TOKEN"
 curl -i "$BASE$PREFIX/rooms/$PRIMARY_ROOM_ID/schedule" -H "Authorization: Bearer $ADMIN_TOKEN"
+
+# Modifié: Capacité valide (25) pour respecter la contrainte (15 <= capacity <= 30)
 curl -i -X PUT "$BASE$PREFIX/rooms/$PRIMARY_ROOM_ID" \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"name":"Room API Updated","type":"vip","capacity":35,"description":"Updated room","hasDisabledAccess":true,"isUnderMaintenance":false}'
-curl -i -X PATCH "$BASE$PREFIX/rooms/$PRIMARY_ROOM_ID" \
-  -H "Authorization: Bearer $ADMIN_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"capacity":40}'
+  -d '{"name":"Room API Updated","type":"vip","capacity":25,"description":"Updated room","hasDisabledAccess":true,"isUnderMaintenance":false}'
+
+# Désactivé: La route PATCH rooms/:id n'existe pas et forçait une capacité invalide de 40
+# curl -i -X PATCH "$BASE$PREFIX/rooms/$PRIMARY_ROOM_ID" \
+#   -H "Authorization: Bearer $ADMIN_TOKEN" \
+#   -H "Content-Type: application/json" \
+#   -d '{"capacity":40}'
+
 curl -i -X PATCH "$BASE$PREFIX/rooms/$PRIMARY_ROOM_ID/maintenance" -H "Authorization: Bearer $ADMIN_TOKEN"
 
 # /movies (admin)
@@ -195,7 +201,7 @@ for i in $(seq 1 "$MOVIES_COUNT"); do
     -H "Authorization: Bearer $ADMIN_TOKEN" \
     -H "Content-Type: application/json" \
     -d "{\"title\":\"Movie API $i\",\"description\":\"Movie $i from curl tests\",\"director\":\"Director API\",\"duration\":$((90 + i * 10)),\"minAge\":12}")"
-  MOVIE_ID="$(printf '%s' "$MOVIE_RESPONSE" | jq -r '.id // empty')"
+  MOVIE_ID="$(printf '%s' "$MOVIE_RESPONSE" | jq -r '.data.id // .id // empty')"
   fail_if_empty "$MOVIE_ID" "MOVIE_ID[$i]" "$MOVIE_RESPONSE"
   MOVIE_IDS+=("$MOVIE_ID")
 done
@@ -224,7 +230,7 @@ for i in $(seq 1 "$SCREENINGS_COUNT"); do
     -H "Authorization: Bearer $ADMIN_TOKEN" \
     -H "Content-Type: application/json" \
     -d "{\"movieId\":$MOVIE_ID,\"roomId\":$ROOM_ID,\"startAt\":\"${DATE_PREFIX}T10:00:00.000Z\",\"endAt\":\"${DATE_PREFIX}T12:00:00.000Z\"}")"
-  SCREENING_ID="$(printf '%s' "$SCREENING_RESPONSE" | jq -r '.id // empty')"
+  SCREENING_ID="$(printf '%s' "$SCREENING_RESPONSE" | jq -r '.data.id // .id // empty')"
   fail_if_empty "$SCREENING_ID" "SCREENING_ID[$i]" "$SCREENING_RESPONSE"
   SCREENING_IDS+=("$SCREENING_ID")
 done
@@ -249,7 +255,7 @@ ADMIN_TRANSACTION_RESPONSE="$(curl -s -X POST "$BASE$PREFIX/transactions" \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"type":"deposit","amount":"99.00","description":"Admin seed transaction"}')"
-ADMIN_TRANSACTION_ID="$(printf '%s' "$ADMIN_TRANSACTION_RESPONSE" | jq -r '.id // empty')"
+ADMIN_TRANSACTION_ID="$(printf '%s' "$ADMIN_TRANSACTION_RESPONSE" | jq -r '.data.id // .id // empty')"
 fail_if_empty "$ADMIN_TRANSACTION_ID" "ADMIN_TRANSACTION_ID" "$ADMIN_TRANSACTION_RESPONSE"
 echo "ADMIN_TRANSACTION_ID=$ADMIN_TRANSACTION_ID"
 curl -i "$BASE$PREFIX/transactions/$ADMIN_TRANSACTION_ID" -H "Authorization: Bearer $ADMIN_TOKEN"
