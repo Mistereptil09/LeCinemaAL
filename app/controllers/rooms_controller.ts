@@ -1,5 +1,4 @@
 import Room from '#models/room'
-import Screening from '#models/screening'
 import { type HttpContext } from '@adonisjs/core/http'
 import { DateTime } from 'luxon'
 
@@ -22,27 +21,54 @@ export default class RoomsController {
   async show({ params }: HttpContext) {
     return Room.findOrFail(params.id)
   }
-
   /**
    * @schedule
    * @tag Rooms
    */
-  async schedule({ params, request }: HttpContext) {
-    // Le sujet demande une période choisie (passée ou future)[cite: 7]
-    const start = request.input('start')
-    const end = request.input('end')
+  async schedule({ params, request, response }: HttpContext) {
+    const room = await Room.find(params.id)
 
-    const query = Screening.query().where('roomId', params.id).preload('movie')
-
-    if (start && end) {
-      // Conversion en ISO-8601 pour le schéma ScreeningSchema
-      const startDate = DateTime.fromISO(start).toSQL()!
-      const endDate = DateTime.fromISO(end).toSQL()!
-      query.whereBetween('startAt', [startDate, endDate])
+    if (!room) {
+      return response.notFound({
+        message: 'Room not found',
+      })
     }
 
-    return query.orderBy('startAt', 'asc')
+    const startDate = request.input('startDate')
+    const endDate = request.input('endDate')
+
+    if (!startDate || !endDate) {
+      return response.badRequest({
+        message: 'Start date and end date are required',
+      })
+    }
+
+    const startDateTime = DateTime.fromISO(startDate).startOf('day')
+    const endDateTime = DateTime.fromISO(endDate).endOf('day')
+
+    if (startDateTime > endDateTime) {
+      return response.badRequest({
+        message: 'Start date must be before end date',
+      })
+    }
+
+    const screenings = await room
+      .related('screenings')
+      .query()
+      .whereBetween('startAt', [startDateTime.toSQL()!, endDateTime.toSQL()!])
+      .preload('movie')
+      .orderBy('startAt', 'asc')
+
+    return response.ok({
+      room,
+      period: {
+        startDate: startDateTime.toISODate(),
+        endDate: endDateTime.toISODate(),
+      },
+      data: screenings,
+    })
   }
+
   /**
    * @store
    * @tag Rooms

@@ -13,7 +13,6 @@ import {
 test.group('Rooms controller', (group) => {
   group.setup(() => testUtils.db().migrate())
   group.each.setup(() => testUtils.db().truncate())
-
   test('index/show/schedule work for authenticated users', async ({ client, assert }) => {
     const user = await createUser('client')
     const room = await createRoom()
@@ -27,22 +26,23 @@ test.group('Rooms controller', (group) => {
 
     const indexResponse = await client.get(api('/rooms')).loginAs(user)
     indexResponse.assertStatus(200)
-    assert.isAtLeast(body<{ meta: { total: number } }>(indexResponse).meta.total, 1)
+    assert.isAtLeast(indexResponse.body().meta.total, 1)
 
     const showResponse = await client.get(api(`/rooms/${room.id}`)).loginAs(user)
     showResponse.assertStatus(200)
-    assert.equal(body<{ id: number }>(showResponse).id, room.id)
+    assert.equal(showResponse.body().id, room.id)
 
     const scheduleResponse = await client
       .get(api(`/rooms/${room.id}/schedule`))
       .qs({
-        start: DateTime.now().minus({ days: 1 }).toISO(),
-        end: DateTime.now().plus({ days: 10 }).toISO(),
+        startDate: DateTime.now().minus({ days: 1 }).toISODate(),
+        endDate: DateTime.now().plus({ days: 10 }).toISODate(),
       })
       .loginAs(user)
 
     scheduleResponse.assertStatus(200)
-    assert.lengthOf(body<unknown[]>(scheduleResponse), 1)
+
+    assert.lengthOf(scheduleResponse.body().data, 1)
   })
 
   test('admin can store/update/toggle/destroy rooms', async ({ client, assert }) => {

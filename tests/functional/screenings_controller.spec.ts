@@ -57,11 +57,12 @@ test.group('Screenings controller', (group) => {
       .json({
         movieId: movie.id,
         roomId: room.id,
-        startAt: DateTime.now().plus({ day: 1 }).toISO(),
-        endAt: DateTime.now().plus({ day: 1, hours: 2 }).toISO(),
+        startAt: DateTime.now().plus({ days: 1 }).set({ hour: 14, minute: 0 }).toISO(),
       })
     storeResponse.assertStatus(201)
-    const created = body<{ id: number }>(storeResponse)
+
+    const storePayload = storeResponse.body()
+    const created = storePayload.data || storePayload
 
     const updateResponse = await client
       .put(api(`/screenings/${created.id}`))
@@ -69,8 +70,7 @@ test.group('Screenings controller', (group) => {
       .json({
         movieId: movie.id,
         roomId: room.id,
-        startAt: DateTime.now().plus({ day: 2 }).toISO(),
-        endAt: DateTime.now().plus({ day: 2, hours: 2 }).toISO(),
+        startAt: DateTime.now().plus({ days: 2 }).set({ hour: 15, minute: 0 }).toISO(),
       })
     updateResponse.assertStatus(200)
 

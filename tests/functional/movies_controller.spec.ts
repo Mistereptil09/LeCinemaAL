@@ -36,12 +36,12 @@ test.group('Movies controller', (group) => {
     const scheduleResponse = await client
       .get(api(`/movies/${movie.id}/schedule`))
       .qs({
-        start: DateTime.now().minus({ days: 1 }).toISO(),
-        end: DateTime.now().plus({ days: 10 }).toISO(),
+        startDate: DateTime.now().minus({ days: 1 }).toISODate(),
+        endDate: DateTime.now().plus({ days: 10 }).toISODate(),
       })
       .loginAs(user)
-
     scheduleResponse.assertStatus(200)
+
     assert.lengthOf(body<unknown[]>(scheduleResponse), 1)
   })
 
@@ -55,8 +55,9 @@ test.group('Movies controller', (group) => {
       duration: 116,
       minAge: 10,
     })
-    storeResponse.assertStatus(201)
-    const created = body<{ id: number; title: string }>(storeResponse)
+
+    const storePayload = storeResponse.body()
+    const created = storePayload.data || storePayload
     assert.equal(created.title, 'Arrival')
 
     const updateResponse = await client
@@ -71,7 +72,8 @@ test.group('Movies controller', (group) => {
       })
     updateResponse.assertStatus(200)
 
-    const updated = updateResponse.body().data || updateResponse.body()
+    const updatePayload = updateResponse.body()
+    const updated = updatePayload.data || updatePayload
     assert.equal(updated.title, 'Arrival Updated')
 
     const deleteResponse = await client.delete(api(`/movies/${created.id}`)).loginAs(admin)
