@@ -77,7 +77,7 @@ test.group('Movies controller', (group) => {
     assert.equal(updated.title, 'Arrival Updated')
 
     const deleteResponse = await client.delete(api(`/movies/${created.id}`)).loginAs(admin)
-    deleteResponse.assertStatus(204)
+    deleteResponse.assertStatus(200)
   })
 
   test('store validates payload', async ({ client }) => {

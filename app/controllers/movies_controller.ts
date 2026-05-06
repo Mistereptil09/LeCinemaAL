@@ -59,7 +59,7 @@ export default class MoviesController {
       .query()
       .whereBetween('start_at', [startDateTime.toSQL()!, endDateTime.toSQL()!])
       .preload('room')
-      .orderBy('date', 'asc')
+      .orderBy('start_at', 'asc')
     return response.ok({
       movie,
       period: {

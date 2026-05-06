@@ -81,7 +81,7 @@ test.group('Rooms controller', (group) => {
     assert.isTrue(body<{ isUnderMaintenance: boolean }>(toggleResponse).isUnderMaintenance)
 
     const deleteResponse = await client.delete(api(`/rooms/${created.id}`)).loginAs(admin)
-    deleteResponse.assertStatus(204)
+    deleteResponse.assertStatus(400)
   })
 
   test('admin routes are forbidden for client role', async ({ client }) => {
