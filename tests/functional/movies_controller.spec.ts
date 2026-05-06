@@ -42,7 +42,7 @@ test.group('Movies controller', (group) => {
       .loginAs(user)
     scheduleResponse.assertStatus(200)
 
-    assert.lengthOf(body<unknown[]>(scheduleResponse), 1)
+    assert.lengthOf(scheduleResponse.body().data, 1)
   })
 
   test('admin can store/update/destroy movies', async ({ client, assert }) => {

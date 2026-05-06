@@ -57,7 +57,7 @@ test.group('Screenings controller', (group) => {
       .json({
         movieId: movie.id,
         roomId: room.id,
-        startAt: DateTime.now().plus({ days: 1 }).set({ hour: 14, minute: 0 }).toISO(),
+        startAt: DateTime.now().plus({ days: 1 }).set({ hour: 17, minute: 0 }).toISO(),
       })
     storeResponse.assertStatus(201)
 
@@ -110,7 +110,7 @@ test.group('Screenings controller', (group) => {
       .json({
         movieId: movie.id,
         roomId: room.id,
-        startAt: DateTime.now().plus({ days: 1 }).set({ hour: 18, minute: 0 }).toISO(),
+        startAt: DateTime.now().plus({ days: 1 }).set({ hour: 10, minute: 0 }).toISO(),
       })
 
     response.assertStatus(403)
